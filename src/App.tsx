@@ -99,7 +99,7 @@ export default function App() {
       return;
     }
 
-    if (state.isRevealed) {
+    if (state.hasRevealedAnonymousRelationWithThisUser) {
       showToastMsg('已解除匿名状态，无法再次发起匿名聊天', 'error');
       return;
     }
@@ -181,6 +181,50 @@ export default function App() {
     });
 
     showToastMsg('首条匿名消息发送成功，消耗 1 次匿名次数！', 'success');
+  };
+
+  const handleRevealIdentity = () => {
+    const textMsg = state.hasRealnameSession
+      ? '你们已经解除了匿名状态，继续聊天吧'
+      : '你们已经解除了匿名状态，开始聊天吧';
+
+    // 1. Add system message in anonymous session
+    const anonSysMsg: Message = {
+      id: `sys_reveal_anon_${Date.now()}`,
+      senderId: 'system',
+      senderName: '系统提示',
+      senderAvatar: '',
+      senderIsAnonymous: false,
+      content: '你们已经解除了匿名状态，跳转聊天',
+      type: 'system',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setAnonymousMessages(prev => [...prev, anonSysMsg]);
+
+    // 2. Add to realname session
+    const realnameSysMsg: Message = {
+      id: `sys_reveal_rn_${Date.now()}`,
+      senderId: 'system',
+      senderName: '系统提示',
+      senderAvatar: '',
+      senderIsAnonymous: false,
+      content: textMsg,
+      type: 'system',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setRealnameMessages(prev => {
+      if (prev.some(m => m.content === textMsg)) return prev;
+      return [...prev, realnameSysMsg];
+    });
+
+    // 3. Mark relationship and general de-anonymization as true
+    handleStateChange({
+      isRevealed: true,
+      hasRevealedAnonymousRelationWithThisUser: true,
+      hasRealnameSession: true
+    });
+
+    showToastMsg('你已成功解除匿名身份！', 'success');
   };
 
   const handleNormalChatClick = () => {
@@ -327,6 +371,7 @@ export default function App() {
                 }}
                 onGoToSettings={handleGoToSettings}
                 onShowToast={showToastMsg}
+                onRevealIdentity={handleRevealIdentity}
               />
             )}
 

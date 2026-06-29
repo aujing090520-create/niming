@@ -60,7 +60,7 @@ export default function ReportPage({ onBack, onSubmit }: ReportPageProps) {
         <h3 className="font-sans font-extrabold text-lg text-gray-950">举报提交成功</h3>
         <p className="text-xs text-gray-500 mt-2 leading-relaxed px-4">
           我们已收到您的举报。我们将在 24 小时内进行核实和处理。
-          {alsoBlock && <span className="block text-red-500 font-bold mt-1">对方已被拉黑，将无法向您发送消息。</span>}
+          {alsoBlock && <span className="block text-red-500 font-bold mt-1">该匿名身份已被拉黑，将无法继续向你发送匿名消息。</span>}
         </p>
       </div>
     );
@@ -139,7 +139,7 @@ export default function ReportPage({ onBack, onSubmit }: ReportPageProps) {
         <div className="bg-white rounded-2xl p-4 border border-gray-100 flex items-center justify-between shadow-xs">
           <div className="flex flex-col gap-0.5">
             <span className="text-xs font-bold text-gray-800">同时拉黑对方</span>
-            <span className="text-[10px] text-gray-400">拉黑后，对方将无法给您发送消息。</span>
+            <span className="text-[10px] text-gray-400">拉黑后，该匿名身份将无法继续向你发送匿名消息。</span>
           </div>
           <button
             onClick={() => setAlsoBlock(!alsoBlock)}

@@ -31,12 +31,12 @@ export default function PreChatPage({
 
   const tryToInitiate = (msg: { content: string; type: 'text' | 'image' | 'voice' | 'gift' | 'greeting' }, isGiftConfirmed = false) => {
     // Quota validation
-    if (state.anonymousTodayLeft <= 0) {
-      onErrorToast('今日匿名次数已用完，请明天再试');
-      return;
-    }
     if (state.anonymousMonthLeft <= 0) {
       onErrorToast('本月匿名次数已用完，请下月再试');
+      return;
+    }
+    if (state.anonymousTodayLeft <= 0) {
+      onErrorToast('今日匿名次数已用完，请明天再试');
       return;
     }
 

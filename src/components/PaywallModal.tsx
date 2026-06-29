@@ -12,7 +12,7 @@ export default function PaywallModal({ isOpen, onClose, onSubscribeSuccess }: Pa
   if (!isOpen) return null;
 
   const benefits = [
-    { title: '无限制匿名聊天', desc: '每日 3 次，每月 30 次匿名发起特权' },
+    { title: '匿名聊天特权', desc: '每日 3 次、每月 30 次匿名发起机会，具体次数以当前配置为准' },
     { title: '尊贵 Plus 标识', desc: '专属金冠与尊贵尊享卡片样式' },
     { title: '多语种翻译无限次', desc: '畅享高级实时翻译与语音转文本服务' },
     { title: '专属推荐权重', desc: '主页曝光率提升 3 倍，结识更多语伴' }

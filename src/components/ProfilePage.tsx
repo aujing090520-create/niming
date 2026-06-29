@@ -58,7 +58,7 @@ export default function ProfilePage({
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               className="absolute right-3 top-12 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 w-44 z-30 overflow-hidden"
             >
-              {!state.isRevealed && (
+              {!state.hasRevealedAnonymousRelationWithThisUser && (
                 <button
                   onClick={() => {
                     setShowMoreMenu(false);
@@ -68,9 +68,9 @@ export default function ProfilePage({
                       onOpenPaywall();
                     }
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 font-medium transition flex items-center gap-2"
+                  className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium transition flex items-center gap-2"
                 >
-                  <ShieldAlert className="w-4 h-4 text-indigo-600" />
+                  <ShieldAlert className="w-4 h-4 text-blue-600" />
                   <span>匿名聊天</span>
                   {!state.isPlus && (
                     <span className="ml-auto bg-amber-500 text-white text-[8px] font-bold px-1 rounded">VIP</span>
@@ -100,9 +100,9 @@ export default function ProfilePage({
       {/* Main Profile Body */}
       <div className="flex-1 overflow-y-auto pb-6">
         {/* Profile Card Header Background */}
-        <div className="relative h-28 bg-gradient-to-r from-indigo-500 to-violet-600 overflow-hidden">
-          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-black" />
-          <div className="absolute bottom-2 left-4 text-[10px] text-white/70 font-mono tracking-widest">CONNECT & LEARN</div>
+        <div className="relative h-28 bg-gradient-to-r from-blue-400 to-sky-500 overflow-hidden">
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-black" />
+          <div className="absolute bottom-2 left-4 text-[10px] text-white/80 font-mono tracking-widest">CONNECT & LEARN</div>
         </div>
 
         {/* Profile Info Card Container */}
@@ -147,19 +147,19 @@ export default function ProfilePage({
           </div>
 
           {/* Language Exchange Badges */}
-          <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col gap-2">
+          <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 flex flex-col gap-2">
             <div className="flex items-center gap-2 text-xs">
-              <Globe className="w-3.5 h-3.5 text-indigo-600" />
+              <Globe className="w-3.5 h-3.5 text-blue-600" />
               <span className="font-bold text-gray-700">语言交换信息</span>
             </div>
             <div className="flex flex-col gap-1.5 mt-0.5">
               <div className="flex items-center gap-2 text-xs">
-                <span className="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded text-[10px]">母语</span>
+                <span className="bg-blue-50 text-blue-800 font-bold px-2 py-0.5 rounded text-[10px]">母语</span>
                 <span className="text-gray-800 font-medium">{user.nativeLang}</span>
                 <span className="text-gray-400">🇺🇸 ➔ 🇬🇧</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded text-[10px]">正在学</span>
+                <span className="bg-sky-50 text-sky-850 font-bold px-2 py-0.5 rounded text-[10px]">正在学</span>
                 <span className="text-gray-800 font-medium">{user.learnLang}</span>
                 <span className="text-gray-400">🇨🇳</span>
               </div>
@@ -167,43 +167,43 @@ export default function ProfilePage({
           </div>
 
           {/* Biography */}
-          <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col gap-1.5">
+          <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 flex flex-col gap-1.5">
             <h3 className="text-xs font-bold text-gray-800">个性签名</h3>
             <p className="text-xs text-gray-600 leading-relaxed font-sans">{user.intro}</p>
           </div>
 
           {/* HelloTalk Features grid */}
           <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-            <div className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between">
+            <div className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between shadow-xs">
               <span className="font-medium">动态 (Moments)</span>
               <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
             </div>
-            <div className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between">
+            <div className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between shadow-xs">
               <span className="font-medium">语言小考评分</span>
-              <span className="text-indigo-600 font-bold">A1</span>
+              <span className="text-blue-600 font-bold">A1</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Bottom Call-to-actions */}
-      <div className="bg-white border-t border-gray-100 p-4 pb-6 flex items-center gap-2.5 z-10">
+      <div className="bg-white border-t border-gray-100 p-4 pb-6 flex items-center gap-2.5 z-10 shadow-xs">
         {/* Normal Chat Button */}
         <button
           onClick={onNormalChatClick}
-          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-full text-xs shadow-md shadow-indigo-600/15 flex items-center justify-center gap-1.5 transition active:scale-95 duration-150"
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full text-xs flex items-center justify-center gap-1.5 transition active:scale-95 duration-150"
         >
           <MessageCircle className="w-4 h-4" />
           发消息
         </button>
 
         {/* Plus Only: "匿名" (Anonymous) Button */}
-        {state.isPlus && !state.isRevealed ? (
+        {state.isPlus && !state.hasRevealedAnonymousRelationWithThisUser ? (
           <button
             onClick={onAnonymousClick}
-            className="bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 font-bold py-3 px-5 rounded-full text-xs flex items-center justify-center gap-1.5 transition active:scale-95 duration-150 shadow-sm relative overflow-hidden"
+            className="bg-white hover:bg-gray-50 text-blue-600 border border-blue-200 font-bold py-3 px-5 rounded-full text-xs flex items-center justify-center gap-1.5 transition active:scale-95 duration-150 shadow-sm"
           >
-            <ShieldAlert className="w-4 h-4 text-violet-700" />
+            <ShieldAlert className="w-4 h-4 text-blue-500" />
             <span>匿名</span>
           </button>
         ) : null}

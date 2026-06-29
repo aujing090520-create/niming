@@ -62,4 +62,5 @@ export interface AppState {
   hasReported: boolean; // Has recipient reported the anonymous user
   hasRealnameSession: boolean; // Whether realname chat session exists
   hasAnonymousSession: boolean; // Whether anonymous chat session exists
+  hasRevealedAnonymousRelationWithThisUser?: boolean; // Whether sender has revealed identity to this specific recipient
 }

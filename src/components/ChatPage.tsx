@@ -37,6 +37,7 @@ interface ChatPageProps {
   onBack: () => void;
   onGoToSettings: () => void;
   onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
+  onRevealIdentity?: () => void;
 }
 
 export default function ChatPage({
@@ -46,7 +47,8 @@ export default function ChatPage({
   setMessages,
   onBack,
   onGoToSettings,
-  onShowToast
+  onShowToast,
+  onRevealIdentity
 }: ChatPageProps) {
   const [inputText, setInputText] = useState('');
   const [activeDrawer, setActiveDrawer] = useState<'none' | 'emoji' | 'gift' | 'voice' | 'image' | 'plus'>('none');
@@ -125,22 +127,11 @@ export default function ChatPage({
   // Reveal Anonymous Action
   const handleConfirmReveal = () => {
     setShowRevealConfirm(false);
-    onChange({ isRevealed: true });
-    onShowToast('你已成功解除匿名身份！正在跳转到实名会话...', 'success');
-
-    // Add system message to history
-    const systemMsg: Message = {
-      id: `sys_reveal_${Date.now()}`,
-      senderId: 'system',
-      senderName: '系统',
-      senderAvatar: '',
-      senderIsAnonymous: false,
-      content: '你们已经解除了匿名状态，跳转聊天',
-      type: 'system',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setMessages(prev => [...prev, systemMsg]);
+    if (onRevealIdentity) {
+      onRevealIdentity();
+    } else {
+      onChange({ isRevealed: true, hasRevealedAnonymousRelationWithThisUser: true });
+    }
   };
 
   // Jump to Realname chat Session
@@ -265,7 +256,7 @@ export default function ChatPage({
               </div>
             </div>
           ) : (
-            state.isRevealed ? (
+            (state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) ? (
               /* Recipient views Andy (Revealed/De-anonymized) */
               <div className="flex items-center gap-2">
                 <img
@@ -280,7 +271,7 @@ export default function ChatPage({
                       PLUS
                     </span>
                   </div>
-                  <span className="text-[9px] text-indigo-600 font-semibold">已解除匿名</span>
+                  <span className="text-[9px] text-blue-650 font-semibold">对方已解除匿名</span>
                 </div>
               </div>
             ) : (
@@ -334,6 +325,19 @@ export default function ChatPage({
 
       {/* 2. Banners Display */}
       <div className="flex flex-col z-10 text-[10.5px]">
+        {/* Revealed Status Banner (Recipient perspective only, and if revealed) */}
+        {state.sessionType === 'anonymous' && state.currentPerspective === 'recipient' && (state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && (
+          <div className="bg-amber-50 text-amber-800 px-3.5 py-2.5 border-b border-amber-100 flex flex-col gap-1 text-[11px]">
+            <div className="flex items-center gap-1.5 font-bold">
+              <Shield className="w-3.5 h-3.5 text-amber-600" />
+              <span>对方已解除匿名身份 (The other party has de-anonymized)</span>
+            </div>
+            <p className="text-gray-500 font-medium leading-relaxed text-[10px]">
+              此会话为匿名期间历史会话。继续聊天请点击底部“跳转聊天”进入实名会话。
+            </p>
+          </div>
+        )}
+
         {/* Risk Banner */}
         {state.sessionType === 'anonymous' ? (
           state.currentPerspective === 'sender' ? (
@@ -350,7 +354,7 @@ export default function ChatPage({
         ) : null}
 
         {/* Locked Status Banner (Sender perspective only, and if not revealed) */}
-        {state.sessionType === 'anonymous' && state.currentPerspective === 'sender' && !state.isRevealed && (
+        {state.sessionType === 'anonymous' && state.currentPerspective === 'sender' && !(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && (
           <div className="bg-indigo-50 text-indigo-850 px-3.5 py-1.5 border-b border-indigo-100 flex items-center gap-1.5 font-bold">
             <Lock className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
             <span>你现在是匿名状态 (Your identity is protected)</span>
@@ -358,7 +362,7 @@ export default function ChatPage({
         )}
 
         {/* Locked Status Banner (Recipient perspective only, and if not revealed) */}
-        {state.sessionType === 'anonymous' && state.currentPerspective === 'recipient' && !state.isRevealed && (
+        {state.sessionType === 'anonymous' && state.currentPerspective === 'recipient' && !(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && (
           <div className="bg-slate-100 text-slate-600 px-3.5 py-1.5 border-b border-slate-200 flex items-center gap-1.5 font-bold">
             <Lock className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
             <span>对方处于匿名状态，你无法查看其真实主页</span>
@@ -398,10 +402,25 @@ export default function ChatPage({
               {/* Profile Avatar bubble */}
               <div className="flex-shrink-0">
                 {state.sessionType === 'anonymous' && !isMe && state.currentPerspective === 'recipient' ? (
-                  /* Recipient views Sender: anonymous avatar */
-                  <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-lg">
-                    {ANONYMOUS_AVATAR}
-                  </div>
+                  /* Recipient views Sender */
+                  (state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) ? (
+                    /* Revealed Andy Avatar */
+                    <div className="relative">
+                      <img
+                        src={ME_PROFILE.avatar}
+                        alt="me"
+                        className="w-8 h-8 rounded-full object-cover border border-amber-400"
+                      />
+                      <span className="absolute -bottom-1 -right-1 bg-amber-500 text-[8px] text-white p-0.5 rounded-full border border-white">
+                        解
+                      </span>
+                    </div>
+                  ) : (
+                    /* Not revealed anonymous avatar */
+                    <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-lg">
+                      {ANONYMOUS_AVATAR}
+                    </div>
+                  )
                 ) : state.sessionType === 'anonymous' && isMe && state.currentPerspective === 'sender' ? (
                   /* Sender views Self in anonymous session: Andy real avatar (but marked anonymous) */
                   <div className="relative">
@@ -432,7 +451,7 @@ export default function ChatPage({
                 {/* Sender name label */}
                 <span className="text-[10px] text-gray-400 mb-0.5 font-medium">
                   {state.sessionType === 'anonymous' && !isMe && state.currentPerspective === 'recipient'
-                    ? `匿名Plus用户 ${ANONYMOUS_ID_CODE}`
+                    ? ((state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) ? `${ME_PROFILE.name} (对方已解除匿名)` : `匿名Plus用户 ${ANONYMOUS_ID_CODE}`)
                     : state.sessionType === 'anonymous' && isMe && state.currentPerspective === 'sender'
                     ? `我 (匿名发送)`
                     : msg.senderName}
@@ -529,9 +548,9 @@ export default function ChatPage({
                     </span>
                   )}
                   {/* Revealed history indicator */}
-                  {state.isRevealed && msg.senderIsAnonymous && (
-                    <span className="text-[8px] bg-gray-100 text-gray-500 px-1 rounded font-bold">
-                      匿名期间发送
+                  {(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && msg.senderIsAnonymous && (
+                    <span className="text-[8px] bg-slate-100 text-slate-500 px-1 rounded font-bold border border-slate-200">
+                      以下为匿名期间消息
                     </span>
                   )}
                 </div>
@@ -543,18 +562,17 @@ export default function ChatPage({
       </div>
 
       {/* 4. Revealed Read-only Overlay */}
-      {state.sessionType === 'anonymous' && state.isRevealed && (
-        <div className="bg-gray-100 border-t border-gray-200 p-4 pb-6 flex flex-col items-center gap-2.5 z-20">
-          <p className="text-xs text-gray-500 font-bold text-center">
-            🔒 你们已经解除了匿名状态，此匿名会话已归档。
-          </p>
-          <button
-            onClick={handleJumpToRealname}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-full shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition"
-          >
-            <span>点此跳转至实名聊天</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
+      {state.sessionType === 'anonymous' && (state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && (
+        <div className="bg-gray-100 border-t border-gray-200 py-5 px-4 flex items-center justify-center text-xs text-gray-500 font-sans z-20 shadow-xs">
+          <span className="flex items-center gap-1 font-medium">
+            🛡️ 你们已经解除了匿名状态，
+            <button
+              onClick={handleJumpToRealname}
+              className="text-blue-600 hover:text-blue-700 font-bold underline cursor-pointer hover:opacity-80 transition"
+            >
+              跳转聊天
+            </button>
+          </span>
         </div>
       )}
 
@@ -580,7 +598,7 @@ export default function ChatPage({
       )}
 
       {/* 6. Active Input Box & Drawers (Normal chat state) */}
-      {(!state.isRevealed || state.sessionType === 'realname') && (
+      {!(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && (!state.isRevealed || state.sessionType === 'realname') && (
         <div className="bg-white border-t border-gray-150 flex flex-col z-20 shadow-lg">
           <div className="flex items-center gap-2 px-3 py-2.5">
             {/* Audio Voice toggle */}
@@ -867,7 +885,7 @@ export default function ChatPage({
               </button>
 
               {/* Recall (only for messages that are sent byAndy, i.e., Me) */}
-              {selectedMessage.senderId === ME_PROFILE.id && (
+              {selectedMessage.senderId === ME_PROFILE.id && !(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && (
                 <button
                   onClick={() => handleRecallMessage(selectedMessage.id)}
                   className="w-full flex items-center gap-3 py-2 px-3 hover:bg-gray-50 text-xs text-gray-700 font-semibold rounded-lg transition text-left"
