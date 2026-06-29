@@ -65,6 +65,13 @@ export default function App() {
         // If developer manually deletes anonymous session, reset related attributes
         setAnonymousMessages([...INITIAL_ANONYMOUS_MESSAGES]);
       }
+      if (updates.hasRealnameSession === false && !next.isRevealed && !next.hasRevealedAnonymousRelationWithThisUser) {
+        // If developer manually turns off realname session, and we are not revealed yet, clear realname messages
+        setRealnameMessages([]);
+      } else if (updates.hasRealnameSession === true && prev.hasRealnameSession === false && !next.isRevealed && !next.hasRevealedAnonymousRelationWithThisUser) {
+        // If developer manually turns on realname session, restore initial messages
+        setRealnameMessages([...INITIAL_REALNAME_MESSAGES]);
+      }
       return next;
     });
   };
@@ -85,6 +92,7 @@ export default function App() {
       hasReported: false,
       hasRealnameSession: true,
       hasAnonymousSession: false,
+      hadRealnameSessionBeforeReveal: undefined
     });
     setAnonymousMessages([...INITIAL_ANONYMOUS_MESSAGES]);
     setRealnameMessages([...INITIAL_REALNAME_MESSAGES]);
@@ -184,9 +192,10 @@ export default function App() {
   };
 
   const handleRevealIdentity = () => {
-    const textMsg = state.hasRealnameSession
+    const hadRealnameBefore = state.hasRealnameSession;
+    const textMsg = hadRealnameBefore
       ? '你们已经解除了匿名状态，继续聊天吧'
-      : '你们已经解除了匿名状态，开始聊天吧';
+      : '你们已经解已经解除了匿名状态，开始聊天吧'; // or start chatting
 
     // 1. Add system message in anonymous session
     const anonSysMsg: Message = {
@@ -208,12 +217,17 @@ export default function App() {
       senderName: '系统提示',
       senderAvatar: '',
       senderIsAnonymous: false,
-      content: textMsg,
+      content: hadRealnameBefore ? '你们已经解除了匿名状态，继续聊天吧' : '你们已经解除了匿名状态，开始聊天吧',
       type: 'system',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setRealnameMessages(prev => {
-      if (prev.some(m => m.content === textMsg)) return prev;
+      if (!hadRealnameBefore) {
+        // Starts fresh with only system message
+        return [realnameSysMsg];
+      }
+      const finalMsgContent = '你们已经解除了匿名状态，继续聊天吧';
+      if (prev.some(m => m.content === finalMsgContent)) return prev;
       return [...prev, realnameSysMsg];
     });
 
@@ -221,7 +235,8 @@ export default function App() {
     handleStateChange({
       isRevealed: true,
       hasRevealedAnonymousRelationWithThisUser: true,
-      hasRealnameSession: true
+      hasRealnameSession: true,
+      hadRealnameSessionBeforeReveal: hadRealnameBefore
     });
 
     showToastMsg('你已成功解除匿名身份！', 'success');
@@ -248,7 +263,12 @@ export default function App() {
       isBlockedByRecipient: alsoBlock,
       activeView: 'chat'
     });
-    showToastMsg('举报已提交' + (alsoBlock ? '且已拉黑对方' : ''), 'success');
+    
+    // Wording changed according to requirement #5:
+    // 未勾选拉黑：举报已提交
+    // 勾选拉黑：举报已提交，已拉黑该匿名身份
+    const toastMessage = alsoBlock ? '举报已提交，已拉黑该匿名身份' : '举报已提交';
+    showToastMsg(toastMessage, 'success');
   };
 
   const handleClearHistory = () => {

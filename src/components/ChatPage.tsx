@@ -247,9 +247,15 @@ export default function ChatPage({
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-gray-900">{SARAH_PROFILE.name}</span>
                   {state.sessionType === 'anonymous' && (
-                    <span className="bg-indigo-100 text-indigo-800 text-[8px] font-black px-1.5 py-0.2 rounded-full">
-                      匿名中
-                    </span>
+                    !(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) ? (
+                      <span className="bg-indigo-100 text-indigo-800 text-[8px] font-black px-1.5 py-0.2 rounded-full">
+                        匿名中
+                      </span>
+                    ) : (
+                      <span className="bg-slate-100 text-slate-505 text-[8px] font-black px-1.5 py-0.2 rounded-full border border-slate-200">
+                        已解除匿名
+                      </span>
+                    )
                   )}
                 </div>
                 <span className="text-[9px] text-gray-400">在线 (Online)</span>
@@ -372,6 +378,49 @@ export default function ChatPage({
 
       {/* 3. Messages Stream Body */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3.5">
+        {/* Realname Session Information Card (only if in realname session, and had no realname session before reveal) */}
+        {state.sessionType === 'realname' && state.hadRealnameSessionBeforeReveal === false && (
+          <div className="bg-amber-50/70 border border-amber-100 rounded-2xl p-4 flex flex-col items-center gap-3 my-1.5 shadow-2xs">
+            <div className="flex items-center gap-5">
+              {/* Sender profile */}
+              <div className="flex flex-col items-center gap-1">
+                <img
+                  src={ME_PROFILE.avatar}
+                  alt={ME_PROFILE.name}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-xs"
+                />
+                <span className="text-[10px] text-gray-800 font-extrabold max-w-[80px] truncate text-center">
+                  {ME_PROFILE.name}
+                </span>
+              </div>
+
+              {/* Linking indicator */}
+              <div className="flex flex-col items-center text-amber-500">
+                <div className="text-xl leading-none">🤝</div>
+                <span className="text-[8px] font-black uppercase bg-amber-100/90 px-1.5 py-0.5 rounded-full text-amber-800 tracking-wider mt-1">
+                  已解除匿名
+                </span>
+              </div>
+
+              {/* Recipient profile */}
+              <div className="flex flex-col items-center gap-1">
+                <img
+                  src={SARAH_PROFILE.avatar}
+                  alt={SARAH_PROFILE.name}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-xs"
+                />
+                <span className="text-[10px] text-gray-800 font-extrabold max-w-[80px] truncate text-center">
+                  {SARAH_PROFILE.name}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-[10.5px] text-amber-900 font-bold text-center leading-relaxed max-w-[240px]">
+              你们已解除匿名身份，现在可以用真实身份继续聊天
+            </p>
+          </div>
+        )}
+
         {messages.map((msg, index) => {
           const isMe = state.currentPerspective === 'sender'
             ? msg.senderId === ME_PROFILE.id
@@ -550,7 +599,7 @@ export default function ChatPage({
                   {/* Revealed history indicator */}
                   {(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && msg.senderIsAnonymous && (
                     <span className="text-[8px] bg-slate-100 text-slate-500 px-1 rounded font-bold border border-slate-200">
-                      以下为匿名期间消息
+                      匿名期间发送
                     </span>
                   )}
                 </div>
@@ -598,7 +647,7 @@ export default function ChatPage({
       )}
 
       {/* 6. Active Input Box & Drawers (Normal chat state) */}
-      {!(state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser) && (!state.isRevealed || state.sessionType === 'realname') && (
+      {!(state.sessionType === 'anonymous' && (state.isRevealed || state.hasRevealedAnonymousRelationWithThisUser)) && (
         <div className="bg-white border-t border-gray-150 flex flex-col z-20 shadow-lg">
           <div className="flex items-center gap-2 px-3 py-2.5">
             {/* Audio Voice toggle */}
