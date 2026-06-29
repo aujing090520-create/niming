@@ -217,6 +217,17 @@ export default function DebugPanel({ state, onChange, onReset }: DebugPanelProps
             />
           </div>
 
+          {/* Recipient Realname Block Sender */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-slate-300">接收方实名拉黑了发起方</span>
+            <input
+              type="checkbox"
+              checked={state.isRealnameBlockedByRecipient || false}
+              onChange={(e) => onChange({ isRealnameBlockedByRecipient: e.target.checked })}
+              className="w-4 h-4 text-red-650 bg-slate-800 border-slate-700 rounded focus:ring-red-500"
+            />
+          </div>
+
           {/* Confirmation Warning Popup Skip */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-300">勾选过“不再提示首次确认”</span>

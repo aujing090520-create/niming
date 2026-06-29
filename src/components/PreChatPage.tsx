@@ -21,6 +21,7 @@ export default function PreChatPage({
 }: PreChatPageProps) {
   const [inputText, setInputText] = useState('');
   const [activeDrawer, setActiveDrawer] = useState<'none' | 'emoji' | 'gift' | 'voice' | 'image'>('none');
+  const [pendingGift, setPendingGift] = useState<GiftItem | null>(null);
 
   const handleSendText = () => {
     if (!inputText.trim()) return;
@@ -28,7 +29,7 @@ export default function PreChatPage({
     setInputText('');
   };
 
-  const tryToInitiate = (msg: { content: string; type: 'text' | 'image' | 'voice' | 'gift' | 'greeting' }) => {
+  const tryToInitiate = (msg: { content: string; type: 'text' | 'image' | 'voice' | 'gift' | 'greeting' }, isGiftConfirmed = false) => {
     // Quota validation
     if (state.anonymousTodayLeft <= 0) {
       onErrorToast('今日匿名次数已用完，请明天再试');
@@ -37,6 +38,15 @@ export default function PreChatPage({
     if (state.anonymousMonthLeft <= 0) {
       onErrorToast('本月匿名次数已用完，请下月再试');
       return;
+    }
+
+    // Gift check for atomic payment simulation
+    if (msg.type === 'gift' && !isGiftConfirmed) {
+      const giftItem = GIFT_ITEMS.find(g => g.id === msg.content);
+      if (giftItem) {
+        setPendingGift(giftItem);
+        return;
+      }
     }
 
     // Call successful start
@@ -85,7 +95,7 @@ export default function PreChatPage({
         {/* Anonymous status banner */}
         <div className="bg-indigo-50 text-indigo-800 px-3.5 py-2 border-b border-indigo-100 flex items-center gap-2 font-sans font-semibold text-[10.5px]">
           <Eye className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-          <span>你当前是匿名状态。接收方只会看到：匿名Plus用户</span>
+          <span>你现在是匿名状态</span>
         </div>
       </div>
 
@@ -276,6 +286,58 @@ export default function PreChatPage({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Gift Simulation Dialog */}
+      <AnimatePresence>
+        {pendingGift && (
+          <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-6 rounded-[40px]">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-[270px] rounded-2xl p-5 text-center shadow-2xl border border-gray-100 flex flex-col gap-4"
+            >
+              <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto text-2xl">
+                {pendingGift.icon}
+              </div>
+              <div className="flex flex-col gap-1">
+                <h3 className="font-sans font-bold text-sm text-gray-950">赠送 {pendingGift.name} 并发起会话</h3>
+                <p className="text-[11px] text-gray-500 leading-normal">
+                  礼物费用: <span className="text-amber-500 font-bold">{pendingGift.points} 积分</span>。发送后礼物支付、匿名次数扣除、匿名会话建立将作为一个原子整体执行。
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 mt-2">
+                <button
+                  onClick={() => {
+                    const giftId = pendingGift.id;
+                    setPendingGift(null);
+                    tryToInitiate({ content: giftId, type: 'gift' }, true);
+                  }}
+                  className="w-full text-xs font-bold text-white py-2.5 px-3 rounded-xl bg-green-600 hover:bg-green-700 transition active:scale-95 flex items-center justify-center gap-1.5"
+                >
+                  <span>✅ 模拟支付并发送成功</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setPendingGift(null);
+                    onErrorToast('礼物支付失败 (余额不足)，会话未创建，未扣减任何次数或积分。');
+                  }}
+                  className="w-full text-xs font-bold text-red-600 py-2.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 transition active:scale-95 flex items-center justify-center gap-1.5"
+                >
+                  <span>❌ 模拟支付失败 (原子回滚)</span>
+                </button>
+                <button
+                  onClick={() => setPendingGift(null)}
+                  className="w-full text-xs font-semibold text-gray-400 py-2.5 px-3 rounded-xl hover:bg-gray-50 transition"
+                >
+                  取消
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

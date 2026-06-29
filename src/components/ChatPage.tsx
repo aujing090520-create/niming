@@ -265,21 +265,36 @@ export default function ChatPage({
               </div>
             </div>
           ) : (
-            /* Recipient views Anonymous User (restricted) */
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-lg">
-                {ANONYMOUS_AVATAR}
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs font-bold text-gray-900">匿名Plus用户 {ANONYMOUS_ID_CODE}</span>
-                  <span className="bg-amber-100 text-amber-850 text-[8px] font-extrabold px-1 rounded-sm">
-                    PLUS
-                  </span>
+            state.isRevealed ? (
+              /* Recipient views Andy (Revealed/De-anonymized) */
+              <div className="flex items-center gap-2">
+                <img
+                  src={ME_PROFILE.avatar}
+                  alt={ME_PROFILE.name}
+                  className="w-8 h-8 rounded-full object-cover border border-gray-100"
+                />
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-bold text-gray-900">{ME_PROFILE.name}</span>
+                    <span className="bg-amber-100 text-amber-850 text-[8px] font-extrabold px-1 rounded-sm">
+                      PLUS
+                    </span>
+                  </div>
+                  <span className="text-[9px] text-indigo-600 font-semibold">已解除匿名</span>
                 </div>
-                <span className="text-[9px] text-gray-400">无法查看其主页</span>
               </div>
-            </div>
+            ) : (
+              /* Recipient views Anonymous User (restricted) */
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-lg">
+                  {ANONYMOUS_AVATAR}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-gray-900">匿名Plus用户 {ANONYMOUS_ID_CODE}</span>
+                  <span className="text-[9px] text-gray-400">无法查看其主页</span>
+                </div>
+              </div>
+            )
           )}
         </div>
 

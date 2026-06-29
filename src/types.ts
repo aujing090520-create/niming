@@ -58,6 +58,7 @@ export interface AppState {
   activeView: 'profile' | 'confirm' | 'prechat' | 'chat' | 'settings' | 'report' | 'sessions_list'; // Current phone screen
   currentPerspective: 'sender' | 'recipient'; // 'sender' (Plus user) or 'recipient' (Sarah)
   isBlockedByRecipient: boolean; // Has recipient blocked the anonymous user
+  isRealnameBlockedByRecipient?: boolean; // Has recipient blocked the sender in real life
   hasReported: boolean; // Has recipient reported the anonymous user
   hasRealnameSession: boolean; // Whether realname chat session exists
   hasAnonymousSession: boolean; // Whether anonymous chat session exists
