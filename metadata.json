@@ -1,0 +1,6 @@
+{
+  "name": "HelloTalk 匿名聊天原型",
+  "description": "展示 HelloTalk Plus 用户在他人 Profile 场景发起匿名聊天的完整交互产品原型，支持多视角、解除匿名、次数规则、拉黑举报等深度交互",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
